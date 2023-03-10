@@ -61,10 +61,7 @@ def category(knots):
     if knots < 113:
         return 3
 
-    if knots < 137:
-        return 4
-
-    return 5
+    return 4 if knots < 137 else 5
 
 
 URLS = {
@@ -90,7 +87,7 @@ class HurricaneDatabase(Dataset):
                 if line[0] in (" ", "<", "\n"):
                     continue
 
-                bassin = line[0:2]
+                bassin = line[:2]
                 number = int(line[2:4])
                 year = int(line[4:8])
                 name = line[18:28].strip().lower()
@@ -98,17 +95,11 @@ class HurricaneDatabase(Dataset):
 
                 # http://www.aoml.noaa.gov/hrd/hurdat/hurdat2-format-may2015.pdf
 
-                for _ in range(0, int(line[33:36])):
+                for _ in range(int(line[33:36])):
                     line = next(lines)
                     knots = float(line[38:41])
                     pressure = np.NaN if line[43] == "-" else float(line[43:47])
-                    time = "%s-%s-%sZ%s:%s" % (
-                        line[0:4],
-                        line[4:6],
-                        line[6:8],
-                        line[10:12],
-                        line[12:14],
-                    )
+                    time = f"{line[:4]}-{line[4:6]}-{line[6:8]}Z{line[10:12]}:{line[12:14]}"
                     p.append(
                         dict(
                             # id=id,

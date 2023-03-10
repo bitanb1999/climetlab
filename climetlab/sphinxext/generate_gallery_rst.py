@@ -99,7 +99,7 @@ def output(title, collection, plotter):
         print(p)
         print("^" * len(p))
 
-        image = "_static/gallery/%s/%s.svg" % (title, p)
+        image = f"_static/gallery/{title}/{p}.svg"
         path = os.path.join(DOCS, image)
 
         if not os.path.exists(path):
@@ -114,7 +114,7 @@ def output(title, collection, plotter):
                 print(traceback.format_exc())
 
         print()
-        print(".. image::", "/" + image)
+        print(".. image::", f"/{image}")
         print("   :width: 600")
         print()
 

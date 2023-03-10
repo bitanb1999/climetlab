@@ -39,7 +39,7 @@ class CDSAPI(APIKeyPrompt):
 
     def validate(self, text):
         uid, key = text.strip().split(":")
-        return APIRC.format(key="%s:%s" % (uid, key))
+        return APIRC.format(key=f"{uid}:{key}")
 
 
 def client():
@@ -63,8 +63,8 @@ class CDSRetriever(FileSource):
         request = self.request(**kwargs)
         self.path = self.cache_file(request)
         if not os.path.exists(self.path):
-            client().retrieve(dataset, request, self.path + ".tmp")
-            os.rename(self.path + ".tmp", self.path)
+            client().retrieve(dataset, request, f"{self.path}.tmp")
+            os.rename(f"{self.path}.tmp", self.path)
 
     @normalize_args(date="date-list(%Y-%m-%d)", area="bounding-box(list)")
     def request(self, **kwargs):

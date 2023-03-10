@@ -109,8 +109,8 @@ def _normalizer(v):
     if not m:
         return NORMALISERS[v]()
 
-    args = m.group(2).split(",")
-    name = m.group(1)
+    args = m[2].split(",")
+    name = m[1]
     return NORMALISERS[name](*args)
 
 

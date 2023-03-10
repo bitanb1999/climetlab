@@ -15,10 +15,7 @@ from climetlab.utils import download_and_cache
 
 
 def test_download():
-    url = (
-        "https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib?_=%s"
-        % (time.time(),)
-    )
+    url = f"https://github.com/ecmwf/climetlab/raw/master/docs/examples/test.grib?_={time.time()}"
     download_and_cache(url)
 
 

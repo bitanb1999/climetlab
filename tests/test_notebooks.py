@@ -45,12 +45,11 @@ TENSORFLOW = ("05-high-lows.ipynb",)
 
 def notebooks_list():
 
-    notebooks = []
-    for path in os.listdir(EXAMPLES):
-        if re.match(r"^\d\d-.*\.ipynb$", path):
-            if "Copy" not in path:
-                notebooks.append(path)
-
+    notebooks = [
+        path
+        for path in os.listdir(EXAMPLES)
+        if re.match(r"^\d\d-.*\.ipynb$", path) and "Copy" not in path
+    ]
     return sorted(notebooks)
 
 
@@ -67,17 +66,16 @@ def test_notebook(path):
     if path in SKIP:
         pytest.skip("Notebook marked as 'skip'")
 
-    if path in MARS:
-        if not os.path.exists(os.path.expanduser("~/.ecmwfapirc")):
-            pytest.skip("No ~/.ecmwfapirc")
+    if path in MARS and not os.path.exists(
+        os.path.expanduser("~/.ecmwfapirc")
+    ):
+        pytest.skip("No ~/.ecmwfapirc")
 
-    if path in CDS:
-        if not os.path.exists(os.path.expanduser("~/.cdsapirc")):
-            pytest.skip("No ~/.cdsapirc")
+    if path in CDS and not os.path.exists(os.path.expanduser("~/.cdsapirc")):
+        pytest.skip("No ~/.cdsapirc")
 
-    if path in TENSORFLOW:
-        if sys.version_info >= (3, 9):
-            pytest.skip("Tensorflow not yet ready on 3.9")
+    if path in TENSORFLOW and sys.version_info >= (3, 9):
+        pytest.skip("Tensorflow not yet ready on 3.9")
 
     with open(os.path.join(EXAMPLES, path)) as f:
         nb = nbformat.read(f, as_version=4)

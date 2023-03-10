@@ -26,17 +26,9 @@ class Era5SingleLevels(Dataset):
         if domain is not None:
             request["area"] = domain_to_area(domain)
 
-        if time is not None:
-            request["time"] = time
-        else:
-            request["time"] = list(range(0, 24))
-
+        request["time"] = time if time is not None else list(range(24))
         if grid is not None:
-            if isinstance(grid, (int, float)):
-                request["grid"] = [grid, grid]
-            else:
-                request["grid"] = grid
-
+            request["grid"] = [grid, grid] if isinstance(grid, (int, float)) else grid
         if isinstance(period, int):
             period = (period, period)
 

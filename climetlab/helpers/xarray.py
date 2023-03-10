@@ -39,17 +39,13 @@ class XArrayDatasetHelper:
             north=self.north, south=self.south, west=self.west, east=self.east
         )
 
-        dimension_settings = dict()
-
-        for d in self.extra_dims:
-            dimension_settings[d] = 0  # self.data[d].data[0]
-
+        dimension_settings = {d: 0 for d in self.extra_dims}
         driver.plot_xarray(self.data, self.name, dimension_settings)
 
     def field_metadata(self):
         shape = self.var.shape
         result = dict(shape=(shape[-2], shape[-1]))
-        result.update(self.var.attrs)
+        result |= self.var.attrs
         result.update(
             dict(
                 north=self.north,

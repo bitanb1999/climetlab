@@ -52,7 +52,7 @@ class Plot:
 
     def __init__(self, kwargs):
         options = {}
-        options.update(SETTINGS.get("plotting-options", {}))
+        options |= SETTINGS.get("plotting-options", {})
         options.update(OPTIONS)
         options.update(kwargs)
         self.driver = Driver(Options(options))

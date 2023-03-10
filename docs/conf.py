@@ -21,8 +21,7 @@ import sys
 top = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.insert(0, top)
 
-if True:  # Keep linters happy
-    import climetlab
+import climetlab
 
 
 source_suffix = ".rst"
@@ -39,12 +38,8 @@ project = "CliMetLab"
 author = "ECMWF"
 
 year = datetime.datetime.now().year
-if year == 2020:
-    years = "2020"
-else:
-    years = "2020-%s" % (year,)
-
-copyright = "%s, ECMWF" % (years,)
+years = "2020" if year == 2020 else f"2020-{year}"
+copyright = f"{years}, ECMWF"
 
 
 # The full version, including alpha/beta/rc tags

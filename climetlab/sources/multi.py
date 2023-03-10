@@ -22,9 +22,7 @@ class MultiSource(Source):
         self._lengths = [None] * len(sources)
 
     def mutate(self):
-        if len(self.sources) == 1:
-            return self.sources[0].mutate()
-        return self
+        return self.sources[0].mutate() if len(self.sources) == 1 else self
 
     #     t = type(self.sources[0])
     #     if all(type(s) == t for s in self.sources):
@@ -82,17 +80,7 @@ class MultiSource(Source):
                     # assert len(vals) == 1, (v, vals)
                     values[v].add(float(vals))
 
-        # for a in arrays:
-        #     print("++++ ======")
-        #     for v in a.variables:
-        #         print(v, [x for x in a[v].dims])
-        #     print("++++ ======")
-        #     print()
-
-        # Promote scalar coordinates
-        promote = [name for name, count in values.items() if len(count) > 1]
-
-        if promote:
+        if promote := [name for name, count in values.items() if len(count) > 1]:
             dims = dict(zip(promote, [1] * len(promote)))
             arrays = [a.expand_dims(dims) for a in arrays]
 

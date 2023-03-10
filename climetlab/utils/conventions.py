@@ -34,9 +34,7 @@ def get_alias_and_conventions():
 
     def split_mapping(key):
         m = re.match(f"([^{SEP}]*){SEP}(.*)", key)
-        if not m:
-            return None, key
-        return m.groups()
+        return m.groups() if m else (None, key)
 
     for i, m in enumerate(mappings):
         for conv_key in m:

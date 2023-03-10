@@ -60,8 +60,8 @@ class MeteonetRadar(Meteonet):
         ds = xr.Dataset(
             {
                 variable: (["time", "y", "x"], data),
-                "x": (["x"], range(0, data.shape[2])),
-                "y": (["y"], range(0, data.shape[1])),
+                "x": (["x"], range(data.shape[2])),
+                "y": (["y"], range(data.shape[1])),
             },
             coords={
                 "lon": (["y", "x"], lons),
@@ -92,7 +92,7 @@ class MeteonetRadar(Meteonet):
         dimensions = {"time": 0}
 
         driver.plot_xarray(self._xarray, self.variable, dimensions)
-        driver.style("meteonet-samples-radar-{}".format(self.variable))
+        driver.style(f"meteonet-samples-radar-{self.variable}")
 
 
 dataset = MeteonetRadar

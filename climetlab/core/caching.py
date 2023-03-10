@@ -154,12 +154,7 @@ def cache_file(owner: str, *args, extension: str = ".cache"):
     m = hashlib.sha256()
     update(m, owner)
     update(m, args)
-    path = "%s/%s-%s%s" % (
-        SETTINGS.get("cache-directory"),
-        owner.lower(),
-        m.hexdigest(),
-        extension,
-    )
+    path = f'{SETTINGS.get("cache-directory")}/{owner.lower()}-{m.hexdigest()}{extension}'
 
     if register_cache_file(path, owner, args):
         update_cache()
@@ -190,14 +185,16 @@ class Cache:
         html = [css("table")]
         with connection() as db:
             for n in db.execute("SELECT * FROM cache"):
-                html.append("<table class='climetlab'>")
-                html.append("<td><td colspan='2'>%s</td></tr>" % (n["path"],))
-
+                html.extend(
+                    (
+                        "<table class='climetlab'>",
+                        f"""<td><td colspan='2'>{n["path"]}</td></tr>""",
+                    )
+                )
                 for k in [x for x in n.keys() if x != "path"]:
                     v = bytes_to_string(n[k]) if k == "size" else n[k]
-                    html.append("<td><td>%s</td><td>%s</td></tr>" % (k, v))
-                html.append("</table>")
-                html.append("<br>")
+                    html.append(f"<td><td>{k}</td><td>{v}</td></tr>")
+                html.extend(("</table>", "<br>"))
         return "".join(html)
 
 

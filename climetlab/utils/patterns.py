@@ -28,9 +28,7 @@ class Enum:
     def substitute(self, value, name):
         if self.enum and value not in self.enum:
             raise ValueError(
-                "Invalid value '{}' for parameter '{}', expected one of {}".format(
-                    value, name, self.enum
-                )
+                f"Invalid value '{value}' for parameter '{name}', expected one of {self.enum}"
             )
         return value
 
@@ -42,9 +40,7 @@ class Int:
     def substitute(self, value, name):
         if not isinstance(value, int):
             raise ValueError(
-                "Invalid value '{}' for parameter '{}', expected an integer".format(
-                    value, name
-                )
+                f"Invalid value '{value}' for parameter '{name}', expected an integer"
             )
         return self.format % value
 
@@ -56,9 +52,7 @@ class Float:
     def substitute(self, value, name):
         if not isinstance(value, (int, float)):
             raise ValueError(
-                "Invalid value '{}' for parameter '{}', expected a float".format(
-                    value, name
-                )
+                f"Invalid value '{value}' for parameter '{name}', expected a float"
             )
 
         return self.format % value
@@ -79,9 +73,7 @@ class Str:
     def substitute(self, value, name):
         if not isinstance(value, str):
             raise ValueError(
-                "Invalid value '{}' for parameter '{}', expected a string".format(
-                    value, name
-                )
+                f"Invalid value '{value}' for parameter '{name}', expected a string"
             )
         return self.format % value
 
@@ -105,14 +97,11 @@ class Variable:
         bits = value.split(":")
         self.name = bits[0]
         kind = RE2.split(":".join(bits[1:]))
-        if len(kind) == 1:
-            self.kind = TYPES[kind[0]]()
-        else:
-            self.kind = TYPES[kind[0]](kind[1])
+        self.kind = TYPES[kind[0]]() if len(kind) == 1 else TYPES[kind[0]](kind[1])
 
     def substitute(self, params):
         if self.name not in params:
-            raise ValueError("Missing parameter '{}'".format(self.name))
+            raise ValueError(f"Missing parameter '{self.name}'")
         return self.kind.substitute(params[self.name], self.name)
 
 
@@ -136,10 +125,10 @@ class Pattern:
     def substitute(self, *args, **kwargs):
         params = {}
         for a in args:
-            params.update(a)
+            params |= a
         params.update(kwargs)
 
-        for k, v in params.items():
+        for v in params.values():
             if isinstance(v, list):
                 return self._substitute_many(params)
 
@@ -152,7 +141,7 @@ class Pattern:
             used.discard(p.name)
             result.append(p.substitute(params))
         if used:
-            raise ValueError("Unused parameter(s): {}".format(used))
+            raise ValueError(f"Unused parameter(s): {used}")
 
         return "".join(str(x) for x in result)
 

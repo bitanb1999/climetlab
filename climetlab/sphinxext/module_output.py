@@ -37,7 +37,7 @@ class ModuleOutput(Directive):
             args = [x for x in self.content if x != ""][0].split(" ")
             name = args.pop(0)
 
-            module = import_module("..%s" % (name.replace("-", "_"),), package=__name__)
+            module = import_module(f'..{name.replace("-", "_")}', package=__name__)
 
             sys.stdout = StringIO()
             module.execute(*args)

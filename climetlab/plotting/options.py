@@ -25,13 +25,12 @@ class Options:
         return name in self._options
 
     def check_unused(self):
-        unused = set(self._options.keys()) - self._used_options
-        if unused:
+        if unused := set(self._options.keys()) - self._used_options:
             raise TypeError(
                 "".join(
                     [
-                        "Unused argument%s: " % ("s" if len(unused) > 1 else "",),
-                        ", ".join("%s=%s" % (x, self._options[x]) for x in unused),
+                        f'Unused argument{"s" if len(unused) > 1 else ""}: ',
+                        ", ".join(f"{x}={self._options[x]}" for x in unused),
                     ]
                 )
             )

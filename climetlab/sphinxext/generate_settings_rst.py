@@ -23,18 +23,14 @@ def tidy(x):
         return [tidy(y) for y in x]
 
     if isinstance(x, dict):
-        d = {}
-        for k, v in x.items():
-            d[k] = tidy(v)
-        return d
-
+        return {k: tidy(v) for k, v in x.items()}
     if isinstance(x, str):
         if x.startswith(HOME):
             n = len(HOME)
-            return tidy("~/{}".format(x[n:]))
+            return tidy(f"~/{x[n:]}")
 
-        if "-" + USER in x:
-            return tidy(x.replace("-" + USER, "-${USER}"))
+        if f"-{USER}" in x:
+            return tidy(x.replace(f"-{USER}", "-${USER}"))
 
     return x
 

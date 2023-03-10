@@ -58,10 +58,7 @@ class Interval(object):
         s2, e2 = other.start, other.end + self.one
         s = max(s1, s2)
         e = min(e1, e2)
-        if s <= e:
-            return self.__class__(min(s1, s2), max(e1, e2) - self.one)
-        else:
-            return None
+        return self.__class__(min(s1, s2), max(e1, e2) - self.one) if s <= e else None
 
     def intersects(self, other):
         """Returns the intersection of two intervals if they overlap, else None"""
@@ -69,10 +66,7 @@ class Interval(object):
         s2, e2 = other.start, other.end + self.one
         s = max(s1, s2)
         e = min(e1, e2)
-        if s <= e:
-            return self.__class__(max(s1, s2), min(e1, e2) - self.one)
-        else:
-            return None
+        return self.__class__(max(s1, s2), min(e1, e2) - self.one) if s <= e else None
 
     @classmethod
     def expand(cls, lst):
@@ -86,9 +80,7 @@ class Interval(object):
     def intersection(cls, list1, list2):
         result = []
         for i1 in list1:
-            for i2 in list2:
-                result.append(i1.intersects(i2))
-
+            result.extend(i1.intersects(i2) for i2 in list2)
         return Interval.join([r for r in result if r is not None])
 
     @classmethod
@@ -118,14 +110,11 @@ class Interval(object):
             if self.start == self.end:
                 return self.start.strftime("%Y-%m-%d")
 
-            return "%s/%s" % (
-                self.start.strftime("%Y-%m-%d"),
-                self.end.strftime("%Y-%m-%d"),
-            )
+            return f'{self.start.strftime("%Y-%m-%d")}/{self.end.strftime("%Y-%m-%d")}'
 
         if self.start == self.end:
             return self.start.isoformat()
-        return "%s/%s" % (self.start.isoformat(), self.end.isoformat())
+        return f"{self.start.isoformat()}/{self.end.isoformat()}"
 
     def __lt__(self, other):
         return (self.start, self.end) < (other.start, other.end)
@@ -157,10 +146,7 @@ def _cleanup(x):
     if isinstance(x, dict):
         return {_cleanup(k): _cleanup(v) for k, v in x.items()}
 
-    if isinstance(x, (str, int, float)):
-        return x
-
-    return str(repr(x))
+    return x if isinstance(x, (str, int, float)) else repr(x)
 
 
 def _to_hashable(x):
@@ -170,7 +156,7 @@ def _to_hashable(x):
 
 def _from_hashable(x):
     assert isinstance(x, tuple)
-    return {k: v for k, v in x}
+    return dict(x)
 
 
 def _as_tuple(t):
@@ -178,9 +164,7 @@ def _as_tuple(t):
         return t
     if isinstance(t, list) and len(t) == 1:
         return _as_tuple(t[0])
-    if isinstance(t, (list, set)):
-        return tuple(t)
-    return (t,)
+    return tuple(t) if isinstance(t, (list, set)) else (t, )
 
 
 def _as_interval(interval):
@@ -197,7 +181,7 @@ def _as_interval(interval):
             continue
 
         bits = t.split("/")
-        assert len(bits) in (1, 2)
+        assert len(bits) in {1, 2}
         if len(bits) == 1:
             start = end = bits[0]
         else:
@@ -245,7 +229,7 @@ class Tree:
             for i in self._intervals:
                 u[i] = Interval.join(u[i])
 
-            for k in u.keys():
+            for k in u:
                 u[k] = tuple(sorted(u[k]))
 
         return dict(**self._unique_values)
@@ -262,7 +246,7 @@ class Tree:
             for c in self._children:
                 for t in c._flatten_tree():
                     r = dict(**self._values)
-                    r.update(t)
+                    r |= t
                     yield r
 
     def to_list(self):
@@ -279,13 +263,10 @@ class Tree:
             c.visit(visitor, depth + 1)
 
     def _kwargs_to_request(self, **kwargs):
-        request = {}
-        for k, v in kwargs.items():
-            if k in self._intervals:
-                request[k] = _as_interval(v)
-            else:
-                request[k] = _as_tuple(v)
-        return request
+        return {
+            k: _as_interval(v) if k in self._intervals else _as_tuple(v)
+            for k, v in kwargs.items()
+        }
 
     def count(self, **kwargs):
         return self._count(self._kwargs_to_request(**kwargs))
@@ -310,16 +291,15 @@ class Tree:
             else:
                 count *= len(values)
 
-        if not self._children:
-            return count
-
-        return sum(count * c._count(request) for c in self._children)
+        return (
+            sum(count * c._count(request) for c in self._children)
+            if self._children
+            else count
+        )
 
     def select(self, **kwargs):
         result = self._select(self._kwargs_to_request(**kwargs))
-        if result is None:
-            return Tree()
-        return result.factorise()
+        return Tree() if result is None else result.factorise()
 
     def _select(self, request):
         ok, matches = self._match(request)
@@ -341,10 +321,7 @@ class Tree:
                 cnt += 1
                 result._add_child(s)
 
-        if cnt == 0:
-            return None
-
-        return result
+        return None if cnt == 0 else result
 
     def missing(self, **kwargs):
         request = self._kwargs_to_request(**kwargs)
@@ -366,10 +343,6 @@ class Tree:
 
             if len(common) == 0:
                 return False, None
-
-            if False:  # If we want an exact match
-                if len(common) != len(values):
-                    return False, None
 
             matches[name] = common
 
@@ -434,7 +407,7 @@ class Tree:
 
         self.visit(V)
 
-        return "".join(x for x in text)
+        return "".join(text)
 
 
 class Column(object):
@@ -475,7 +448,7 @@ class Column(object):
             raise
 
     def __repr__(self):
-        return "Column(%s,%s,%s,%s)" % (self.title, self.values, self.prio, self.diff)
+        return f"Column({self.title},{self.values},{self.prio},{self.diff})"
 
 
 class Table(object):
@@ -510,7 +483,7 @@ class Table(object):
         self.colidx.append(len(self.colidx))
 
         if len(col) > len(self.rowidx):
-            self.rowidx = [i for i in range(len(col))]
+            self.rowidx = list(range(len(col)))
 
     def one_less(self, r, n):
         return [self.get_elem(i, r) for i in range(len(self.colidx)) if i != n]
@@ -643,14 +616,7 @@ def _scan(r, cols, name, rest):
 
 def _as_requests(r):
 
-    s = {}
-    for k, v in r.items():
-        if not isinstance(v, (tuple, list)):
-            s[k] = [v]
-        else:
-            s[k] = v
-
-    return s
+    return {k: v if isinstance(v, (tuple, list)) else [v] for k, v in r.items()}
 
 
 def factorise(req, *, intervals=None):

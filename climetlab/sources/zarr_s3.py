@@ -26,10 +26,7 @@ class Cache:
         return key in self._store
 
     def __getitem__(self, key):
-        # print("Cache.__getitem__", key)
-        data = self._store[key]
-        # print(len(data))
-        return data
+        return self._store[key]
 
     def keys(self):
         return self._store.keys()
@@ -81,7 +78,7 @@ class ZarrS3(Source):
                 print(f"ERROR : Cannot find data at url = {url}")
                 raise (e)
 
-        assert len(dslist) > 0
+        assert dslist
 
         if len(dslist) == 1:
             self._ds = dslist[0]

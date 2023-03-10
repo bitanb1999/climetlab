@@ -109,7 +109,7 @@ class Driver:
             mgrib(
                 grib_input_file_name=path,
                 grib_file_address_mode="byte_offset",
-                grib_field_position=int(offset),
+                grib_field_position=offset,
             )
         )
 
@@ -118,9 +118,7 @@ class Driver:
         if dimensions is None:
             dimensions = {}
 
-        dimension_setting = ["%s:%s" % (k, v) for k, v in dimensions.items()]
-
-        if dimension_setting:
+        if dimension_setting := [f"{k}:{v}" for k, v in dimensions.items()]:
             params = dict(
                 netcdf_filename=path,
                 netcdf_value_variable=variable,
@@ -231,19 +229,18 @@ class Driver:
         )
 
     def style(self, style):
-        if len(self._layers) > 0:
-            last_layer = self._layers[-1]
-            last_layer.style(
-                apply(
-                    value=style,
-                    target=last_layer,
-                    collection="styles",
-                    default=None,
-                    options=self._options,
-                )
-            )
-        else:
+        if len(self._layers) <= 0:
             raise Exception("No current data layer: cannot set style '%r'" % (style,))
+        last_layer = self._layers[-1]
+        last_layer.style(
+            apply(
+                value=style,
+                target=last_layer,
+                collection="styles",
+                default=None,
+                options=self._options,
+            )
+        )
 
     def apply_options(self, options):
         if options.provided("style"):
@@ -351,11 +348,10 @@ class Driver:
         _title_height_cm = 0
         if title:
             _title_height_cm = 0.7
-            if title is True:
-                # Automatic title
-                self._title = mtext()
-            else:
-                self._title = mtext(
+            self._title = (
+                mtext()
+                if title is True
+                else mtext(
                     text_lines=[str(title)],
                     # text_justification='center',
                     # text_font_size=0.6,
@@ -364,7 +360,7 @@ class Driver:
                     # text_box_y_position=18.50,
                     # text_colour='charcoal'
                 )
-
+            )
         page = output(
             output_file=path,
             page_x_length=self._width_cm,
@@ -388,17 +384,15 @@ class Driver:
 
         args = [page] + self.macro()
 
-        dump = self._options("dump_python", False)
-        if dump:
-            m = "from Magics import macro\nmacro.plot({})".format(args)
+        if dump := self._options("dump_python", False):
+            m = f"from Magics import macro\nmacro.plot({args})"
             if isinstance(dump, str):
                 with open(dump, "w") as f:
                     print(m, file=f)
             else:
                 print(m)
 
-        dump = self._options("dump_yaml", False)
-        if dump:
+        if dump := self._options("dump_yaml", False):
             if isinstance(dump, str):
                 with open(dump, "w") as f:
                     print(

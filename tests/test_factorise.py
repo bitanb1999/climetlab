@@ -53,8 +53,8 @@ def test_factorise_1():
         "step": ("24", "36", "48"),
     }
 
-    assert sum(1 for x in c.iterate(False)) == 3
-    assert sum(1 for x in c.iterate(True)) == 10
+    assert sum(1 for _ in c.iterate(False)) == 3
+    assert sum(1 for _ in c.iterate(True)) == 10
 
     assert c.select(param="T").count() == 5
     assert c.select(param="Z").count() == 5

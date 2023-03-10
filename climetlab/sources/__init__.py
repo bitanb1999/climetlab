@@ -94,18 +94,14 @@ class Source:
         return self
 
     def cache_file(self, *args, extension=".cache"):
-        owner = self.name
-        if self.dataset:
-            owner = self.dataset.name
+        owner = self.dataset.name if self.dataset else self.name
         if owner is None:
             owner = self.__class__.__name__.lower()
         return cache_file(owner, *args, extension=extension)
 
     @property
     def dataset(self):
-        if self._dataset is None:
-            return None
-        return self._dataset()
+        return None if self._dataset is None else self._dataset()
 
     @dataset.setter
     def dataset(self, dataset):

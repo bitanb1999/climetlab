@@ -32,9 +32,7 @@ class Annotation:
 
     @property
     def owner(self):
-        if self._owner is None:
-            return None
-        return self._owner()
+        return None if self._owner is None else self._owner()
 
     def __repr__(self):
         return repr(self._kwargs)
@@ -52,7 +50,7 @@ def _annotate_pandas(pd, owner, **kargs):
         pd._metadata.append(None)
 
     slot = free_slot()
-    pd._metadata[n] = "climetlab-{}".format(slot)
+    pd._metadata[n] = f"climetlab-{slot}"
 
     ANNOTATIONS[slot] = Annotation(owner, **kargs)
 

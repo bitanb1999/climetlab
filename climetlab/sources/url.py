@@ -27,7 +27,7 @@ class Url(FileSource):
         base, ext = os.path.splitext(url)
         _, tar = os.path.splitext(base)
         if tar == ".tar":
-            ext = ".tar" + ext
+            ext = f".tar{ext}"
 
         if unpack is None:
             unpack = ext in (".tar", ".tar.gz")
@@ -51,7 +51,7 @@ class Url(FileSource):
             return
 
         LOG.info("Downloading %s", url)
-        download = target + ".download"
+        download = f"{target}.download"
         r = requests.head(url)
         r.raise_for_status()
         try:
@@ -85,7 +85,7 @@ class Url(FileSource):
         if os.path.exists(directory):
             return
         LOG.info("Unpacking...")
-        target = directory + ".tmp"
+        target = f"{directory}.tmp"
         if not os.path.exists(target):
             os.mkdir(target)
 

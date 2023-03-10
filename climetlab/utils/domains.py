@@ -56,6 +56,4 @@ AREAS["serbia"] = AREAS["republic of serbia"]
 
 
 def domain_to_area(name):
-    if isinstance(name, (list, tuple)):
-        return name
-    return AREAS[name.lower()]
+    return name if isinstance(name, (list, tuple)) else AREAS[name.lower()]

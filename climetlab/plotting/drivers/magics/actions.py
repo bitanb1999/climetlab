@@ -48,9 +48,8 @@ class Action:
         self.kwargs = kwargs
 
     def __repr__(self):
-        x = ["macro.%s(" % (self.action,)]
-        for k, v in sorted(self.kwargs.items()):
-            x.append("\n   %s=%r," % (k, v))
+        x = [f"macro.{self.action}("]
+        x.extend("\n   %s=%r," % (k, v) for k, v in sorted(self.kwargs.items()))
         x.append("\n    )")
         return "".join(x)
 

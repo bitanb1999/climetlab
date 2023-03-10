@@ -19,15 +19,11 @@ class BoundingBox:
 
         if self.north <= self.south:
             raise ValueError(
-                "North (%s) must be greater than south (%s)"
-                % (
-                    self.north,
-                    self.south,
-                )
+                f"North ({self.north}) must be greater than south ({self.south})"
             )
 
         if self.west == self.east:
-            raise ValueError("West (%s) is equal to east (%s)" % (west, east))
+            raise ValueError(f"West ({west}) is equal to east ({east})")
 
         while self.east < self.west:
             self.east += 360

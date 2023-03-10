@@ -16,7 +16,7 @@ import yaml
 
 def test_yaml():
     print(yaml.__version__)
-    yfile = os.path.dirname(__file__) + "/example.yaml"
+    yfile = f"{os.path.dirname(__file__)}/example.yaml"
     print(yfile)
     with open(yfile) as f:
         s = yaml.load(f.read(), Loader=yaml.SafeLoader)

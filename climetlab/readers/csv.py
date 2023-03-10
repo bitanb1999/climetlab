@@ -15,7 +15,7 @@ class CSVReader(Reader):
         import pandas
 
         options = {}
-        options.update(self.source.read_csv_options())
+        options |= self.source.read_csv_options()
         options.update(kwargs)
 
         return pandas.read_csv(self.path, **options)

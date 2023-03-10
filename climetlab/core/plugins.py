@@ -38,10 +38,10 @@ def register(kind, name_or_module, module_or_none=None):
 
 
 def _load_plugins(kind):
-    plugins = {}
-    for e in entrypoints.get_group_all(f"climetlab.{kind}s"):
-        plugins[e.name.replace("_", "-")] = e
-    return plugins
+    return {
+        e.name.replace("_", "-"): e
+        for e in entrypoints.get_group_all(f"climetlab.{kind}s")
+    }
 
 
 def load_plugins(kind):
@@ -81,7 +81,7 @@ def find_plugin(directory, name, loader):
 
                 full = os.path.join(path, base)
                 if full[0] != "/":
-                    full = "/" + full
+                    full = f"/{full}"
                 p = full[1:].replace("/", "-").replace("_", "-")
                 candidates.add(p)
                 if p == name:
@@ -95,10 +95,11 @@ def directories():
 
     result = []
     for conf in ("styles-directories", "projections-directories", "layers-directories"):
-        for d in SETTINGS.get(conf):
-            if os.path.exists(d) and os.path.isdir(d):
-                result.append(d)
-
+        result.extend(
+            d
+            for d in SETTINGS.get(conf)
+            if os.path.exists(d) and os.path.isdir(d)
+        )
     for kind in ("dataset", "source"):
         for _, v in load_plugins(kind).items():
             try:

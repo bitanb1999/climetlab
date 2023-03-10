@@ -76,7 +76,7 @@ extras_require = {}  # {"interactive": ["skinnywms", "folium"]}
 
 
 full = []
-for k, v in extras_require.items():
+for v in extras_require.values():
     full += v
 full += install_requires
 

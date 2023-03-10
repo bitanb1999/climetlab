@@ -59,11 +59,7 @@ def tidy(x):
         return [tidy(y) for y in x]
 
     if isinstance(x, dict):
-        r = {}
-        for k, v in x.items():
-            r[str(k)] = tidy(v)
-        return r
-
+        return {str(k): tidy(v) for k, v in x.items()}
     if isinstance(x, (int, float, str)):
         return x
 
@@ -77,11 +73,12 @@ def ipython_environment():
 
     import IPython
 
-    r = {}
     k = IPython.get_ipython()
-    for n in dir(k):
-        if not callable(getattr(k, n)) and not n.startswith("__"):
-            r[n] = getattr(k, n)
+    r = {
+        n: getattr(k, n)
+        for n in dir(k)
+        if not callable(getattr(k, n)) and not n.startswith("__")
+    }
     print(json.dumps(tidy(r), sort_keys=True, indent=4))
 
 

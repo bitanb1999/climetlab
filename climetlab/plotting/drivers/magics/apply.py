@@ -61,9 +61,9 @@ def _apply_dict(*, value, collection, action, default, target, options):  # noqa
         newvalue = {}
         for k, v in value.get("set", {}).items():
             if v is None:
-                newvalue["-{}".format(k)] = v
+                newvalue[f"-{k}"] = v
             else:
-                newvalue["+{}".format(k)] = v
+                newvalue[f"+{k}"] = v
 
         return apply(
             value=newvalue,
@@ -75,12 +75,9 @@ def _apply_dict(*, value, collection, action, default, target, options):  # noqa
         )
 
     if "set" in value or "clear" in value:
-        newvalue = {}
-        for k, v in value.get("set", {}).items():
-            newvalue["+{}".format(k)] = v
-
+        newvalue = {f"+{k}": v for k, v in value.get("set", {}).items()}
         for k in value.get("clear", []):
-            newvalue["-{}".format(k)] = None
+            newvalue[f"-{k}"] = None
 
         return apply(
             value=newvalue,
@@ -92,12 +89,9 @@ def _apply_dict(*, value, collection, action, default, target, options):  # noqa
         )
 
     if "+" in value or "-" in value:
-        newvalue = {}
-        for k, v in value.get("+", {}).items():
-            newvalue["+{}".format(k)] = v
-
+        newvalue = {f"+{k}": v for k, v in value.get("+", {}).items()}
         for k in value.get("-", []):
-            newvalue["-{}".format(k)] = None
+            newvalue[f"-{k}"] = None
 
         return apply(
             value=newvalue,
@@ -195,4 +189,4 @@ def apply(*, value, collection=None, action=None, default=None, target, options)
             options=options,
         )
 
-    raise ValueError("Unsupported type %s, %s (%s)" % (type(value), value, collection))
+    raise ValueError(f"Unsupported type {type(value)}, {value} ({collection})")

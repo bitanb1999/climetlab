@@ -14,19 +14,16 @@ class IntHelper:
         self.data = data
 
     def to_datetime(self):
-        if self.data <= 0:
-            date = datetime.datetime.utcnow() + datetime.timedelta(days=self.data)
-            return datetime.datetime(date.year, date.month, date.day)
-        else:
+        if self.data > 0:
             return datetime.datetime(
                 self.data // 10000, self.data % 10000 // 100, self.data % 100
             )
+        date = datetime.datetime.utcnow() + datetime.timedelta(days=self.data)
+        return datetime.datetime(date.year, date.month, date.day)
 
     def to_datetime_list(self):
         return [self.to_datetime()]
 
 
 def helper(data, *args, **kwargs):
-    if isinstance(data, int):
-        return IntHelper(data)
-    return None
+    return IntHelper(data) if isinstance(data, int) else None

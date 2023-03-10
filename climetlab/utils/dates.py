@@ -66,7 +66,7 @@ def to_datetime(dt):
         if isinstance(dt, int):
             return datetime.datetime.utcfromtimestamp(dt * 1e-9)
 
-        raise ValueError("Failed to convert numpy datetime {}".format((dt, type(dt))))
+        raise ValueError(f"Failed to convert numpy datetime {(dt, type(dt))}")
 
     if isinstance(dt, str):
         return parse_date(dt)

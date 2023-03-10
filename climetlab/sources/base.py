@@ -57,9 +57,9 @@ class FileSource(Source):
     def to_metview(self, *args, **kwargs):
         return self._reader.to_metview(*args, **kwargs)
 
-    def multi_merge(sources):
+    def multi_merge(self):
         f = FileSource()
-        t = type(sources[0]._reader)
+        t = type(self[0]._reader)
         assert all(type(s._reader) == t for s in sources)
         f._reader_ = t.multi_merge(f, [a._reader for a in sources])
         return os.fspath
@@ -80,11 +80,7 @@ HTML_MESSAGE = """
 
 class APIKeyPrompt(ABC):
     def ask_user_and_save(self):
-        if ipython_active:
-            text = self.ask_user_markdown()
-        else:
-            text = self.ask_user_text()
-
+        text = self.ask_user_markdown() if ipython_active else self.ask_user_text()
         try:
             text = self.validate(text)
         except Exception:
@@ -100,14 +96,14 @@ class APIKeyPrompt(ABC):
         return True
 
     def ask_user_text(self) -> str:
-        return getpass.getpass("\n".join([self.text_message, self.prompt + ": "]))
+        return getpass.getpass("\n".join([self.text_message, f"{self.prompt}: "]))
 
     def ask_user_markdown(self) -> str:
         message = markdown.markdown(self.markdown_message)
         # We use Python's markdown instead of IPython's Markdown because
         # jupyter lab/colab/deepnotes all behave differently
         display(HTML(HTML_MESSAGE.format(message=message)))
-        return getpass.getpass(self.prompt + ": ")
+        return getpass.getpass(f"{self.prompt}: ")
 
     @abstractmethod
     def prompt(self):

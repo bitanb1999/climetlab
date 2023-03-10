@@ -23,7 +23,7 @@ DOT_CLIMETLAB = os.path.expanduser("~/.climetlab")
 
 SETTINGS_AND_HELP = {
     "cache-directory": (
-        os.path.join(tempfile.gettempdir(), "climetlab-%s" % (getpass.getuser(),)),
+        os.path.join(tempfile.gettempdir(), f"climetlab-{getpass.getuser()}"),
         """Directory of where the dowloaded files are cached, with ``${USER}`` is the user id.
         See :ref:`caching` for more information.""",
     ),
@@ -49,11 +49,7 @@ SETTINGS_AND_HELP = {
     ),
 }
 
-DEFAULTS = {}
-for k, v in SETTINGS_AND_HELP.items():
-    DEFAULTS[k] = v[0]
-
-
+DEFAULTS = {k: v[0] for k, v in SETTINGS_AND_HELP.items()}
 NONE = object()
 
 
@@ -77,7 +73,7 @@ class Settings:
         """
 
         if name not in DEFAULTS:
-            raise KeyError("No setting name '%s'" % (name,))
+            raise KeyError(f"No setting name '{name}'")
 
         if default is NONE:
             return self._settings[name]
@@ -93,35 +89,35 @@ class Settings:
         """
 
         if name not in DEFAULTS:
-            raise KeyError("No setting name '%s'" % (name,))
+            raise KeyError(f"No setting name '{name}'")
 
         klass = type(DEFAULTS[name])
 
         if klass in (bool, int, float, str):
             # TODO: Proper exceptions
             assert len(args) == 1
-            assert len(kwargs) == 0
+            assert not kwargs
             value = args[0]
 
         if klass is list:
-            assert len(args) > 0
-            assert len(kwargs) == 0
+            assert args
+            assert not kwargs
             value = list(args)
             if len(args) == 1 and isinstance(args[0], list):
                 value = args[0]
 
         if klass is dict:
             assert len(args) <= 1
-            if len(args) == 0:
-                assert len(kwargs) > 0
+            if not args:
+                assert kwargs
                 value = kwargs
 
             if len(args) == 1:
-                assert len(kwargs) == 0
+                assert not kwargs
                 value = args[0]
 
         if not isinstance(value, klass):
-            raise TypeError("Setting '%s' must be of type '%s'" % (name, klass))
+            raise TypeError(f"Setting '{name}' must be of type '{klass}'")
 
         self._settings[name] = value
         self._changed()
@@ -137,7 +133,7 @@ class Settings:
             self._settings = dict(**DEFAULTS)
         else:
             if name not in DEFAULTS:
-                raise KeyError("No setting name '%s'" % (name,))
+                raise KeyError(f"No setting name '{name}'")
 
             self._settings.pop(name, None)
             if name in DEFAULTS:
@@ -145,13 +141,12 @@ class Settings:
         self._changed()
 
     def _repr_html_(self):
-        html = [css("table")]
-        html.append("<table class='climetlab'>")
-        for k, v in sorted(self._settings.items()):
-            html.append(
-                "<tr><td>%s</td><td>%r</td><td>%r</td></td>"
-                % (k, v, SETTINGS_AND_HELP.get(k, (None, "..."))[0])
-            )
+        html = [css("table"), "<table class='climetlab'>"]
+        html.extend(
+            "<tr><td>%s</td><td>%r</td><td>%r</td></td>"
+            % (k, v, SETTINGS_AND_HELP.get(k, (None, "..."))[0])
+            for k, v in sorted(self._settings.items())
+        )
         html.append("</table>")
         return "".join(html)
 
@@ -197,7 +192,7 @@ settings = dict(**DEFAULTS)
 try:
     with open(settings_yaml) as f:
         s = yaml.load(f, Loader=yaml.SafeLoader)
-        settings.update(s)
+        settings |= s
 
 except Exception:
     LOG.error(

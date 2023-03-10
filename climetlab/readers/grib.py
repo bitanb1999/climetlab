@@ -64,10 +64,12 @@ class CodesReader:
 
     def __next__(self):
         offset = self.file.tell()
-        handle = eccodes.codes_new_from_file(self.file, eccodes.CODES_PRODUCT_GRIB)
-        if not handle:
+        if handle := eccodes.codes_new_from_file(
+            self.file, eccodes.CODES_PRODUCT_GRIB
+        ):
+            return CodesHandle(handle, self.path, offset)
+        else:
             raise StopIteration()
-        return CodesHandle(handle, self.path, offset)
 
     @property
     def offset(self):
@@ -129,14 +131,7 @@ class GribField:
         return self.values.reshape(self.shape)
 
     def __repr__(self):
-        return "GribField(%s,%s,%s,%s,%s,%s)" % (
-            self.handle.get("shortName"),
-            self.handle.get("levelist"),
-            self.handle.get("date"),
-            self.handle.get("time"),
-            self.handle.get("step"),
-            self.handle.get("number"),
-        )
+        return f'GribField({self.handle.get("shortName")},{self.handle.get("levelist")},{self.handle.get("date")},{self.handle.get("time")},{self.handle.get("step")},{self.handle.get("number")})'
 
     def _grid_definition(self):
         return dict(
@@ -183,10 +178,7 @@ class GribField:
         )
 
     def _attributes(self, names):
-        result = {}
-        for name in names:
-            result[name] = self.handle.get(name)
-        return result
+        return {name: self.handle.get(name) for name in names}
 
 
 class GRIBIterator:
@@ -195,7 +187,7 @@ class GRIBIterator:
         self.reader = CodesReader(path)
 
     def __repr__(self):
-        return "GRIBIterator(%s)" % (self.path,)
+        return f"GRIBIterator({self.path})"
 
     def __next__(self):
         offset = self.reader.offset
@@ -212,7 +204,7 @@ class GRIBFilter:
         self._filter = dict(**filter)
 
     def __repr__(self):
-        return "GRIBFilter(%s, %s)" % (self._reader, self._filter)
+        return f"GRIBFilter({self._reader}, {self._filter})"
 
     def __iter__(self):
         return GRIBIterator(self.path)
@@ -230,7 +222,7 @@ class OLDGRIBReader(Reader):
         self._reader = None
 
     def __repr__(self):
-        return "GRIBReader(%s)" % (self.path,)
+        return f"GRIBReader({self.path})"
 
     def __iter__(self):
         return GRIBIterator(self.path)
@@ -238,8 +230,7 @@ class OLDGRIBReader(Reader):
     def _items(self):
         if self._fields is None:
             self._fields = []
-            for f in self:
-                self._fields.append(f.offset)
+            self._fields.extend(f.offset for f in self)
         return self._fields
 
     def __getitem__(self, n):
@@ -261,22 +252,21 @@ class OLDGRIBReader(Reader):
     def sel(self, **kwargs):
         return GRIBFilter(self, kwargs)
 
-    def multi_merge(source, readers):
-        return GRIBMultiFileReader(source, readers)
+    def multi_merge(self, readers):
+        return GRIBMultiFileReader(self, readers)
 
 
 class GRIBReader(Reader):
     def __init__(self, source, paths=None, fields=[], filter=None, unfiltetered=True):
         super().__init__(source, paths)
-        self._fields = [f for f in fields]
+        self._fields = list(fields)
         self._unfiltetered = unfiltetered
 
         if paths is not None:
             if not isinstance(paths, (list, tuple)):
                 paths = [paths]
             for path in paths:
-                for f in GRIBIterator(path):
-                    self._fields.append(f)
+                self._fields.extend(iter(GRIBIterator(path)))
 
     def __getitem__(self, n):
         return self._fields[n]
@@ -285,12 +275,9 @@ class GRIBReader(Reader):
         return len(self._fields)
 
     def _attributes(self, names):
-        result = []
-        for field in self:
-            result.append(field._attributes(names))
-        return result
+        return [field._attributes(names) for field in self]
 
-    def multi_merge(source, readers):
+    def multi_merge(self, readers):
         fields = []
         paths = []
         for r in readers:
@@ -301,10 +288,7 @@ class GRIBReader(Reader):
                 paths.append(r.path)
 
         return GRIBReader(
-            source,
-            paths=paths,
-            # fields=fields,
-            unfiltetered=all(r._unfiltetered for r in readers),
+            self, paths=paths, unfiltetered=all(r._unfiltetered for r in readers)
         )
 
     def to_xarray(self):
@@ -327,8 +311,7 @@ class Field:
 
     def __getitem__(self, key):
         print("field", key)
-        v = self.field.handle.get(key)
-        return v
+        return self.field.handle.get(key)
 
 
 class FieldSetIndex:
@@ -361,7 +344,7 @@ class FieldSetIndex:
 
     def subindex(self, filter_by_keys={}, **kwargs):
         query = dict(**self.filter_by_keys)
-        query.update(filter_by_keys)
+        query |= filter_by_keys
         query.update(kwargs)
         return FieldSetIndex(
             source=self.source,
@@ -373,10 +356,7 @@ class FieldSetIndex:
         )
 
     def _valid(self, item):
-        for k, v in self.filter_by_keys.items():
-            if item.get(k) != v:
-                return False
-        return True
+        return all(item.get(k) == v for k, v in self.filter_by_keys.items())
 
     def _valid_items(self):
         if self.items is None:

@@ -45,20 +45,18 @@ def consume_args(func1, func2, *args, **kwargs):
     if func2 is None:
         func2 = _dummy
 
-    args1 = set()
     sig1 = inspect.signature(func1)
-    for name, param in sig1.parameters.items():
-        if param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-            args1.add(name)
-
-    # print(f"{func1.__name__}{sig1}")
-
-    args2 = set()
+    args1 = {
+        name
+        for name, param in sig1.parameters.items()
+        if param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD)
+    }
     sig2 = inspect.signature(func2)
-    for name, param in sig2.parameters.items():
-        if param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD):
-            args2.add(name)
-
+    args2 = {
+        name
+        for name, param in sig2.parameters.items()
+        if param.kind not in (param.VAR_POSITIONAL, param.VAR_KEYWORD)
+    }
     # print(f"{func2.__name__}{sig2}")
 
     common = args1.intersection(args2)
@@ -72,8 +70,6 @@ def consume_args(func1, func2, *args, **kwargs):
     spec = inspect.getfullargspec(func1)
 
     args_1 = []
-    kwargs_1 = {}
-
     args = list(args)
 
     spec_args = [a for a in spec.args if a != "self"]
@@ -86,9 +82,10 @@ def consume_args(func1, func2, *args, **kwargs):
         args_1.append(args.pop(0))
 
     n = len(args_1)
-    for a in spec_args[n:] + spec.kwonlyargs:
-        if a in kwargs:
-            kwargs_1[a] = kwargs.pop(a)
-
+    kwargs_1 = {
+        a: kwargs.pop(a)
+        for a in spec_args[n:] + spec.kwonlyargs
+        if a in kwargs
+    }
     # print('<=====', args_1, kwargs_1, args, kwargs)
     return args_1, kwargs_1, args, kwargs

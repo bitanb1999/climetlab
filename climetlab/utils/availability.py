@@ -27,7 +27,7 @@ class Availability:
         self._tree = avail
 
     def _repr_html_(self):
-        return "<hr><pre>{}</pre><hr>".format(self.tree())
+        return f"<hr><pre>{self.tree()}</pre><hr>"
 
     def select(self, *args, **kwargs):
         return Availability(self._tree.select(*args, **kwargs))
@@ -41,10 +41,9 @@ class Availability:
 
 def availability(avail):
 
-    if isinstance(avail, str):
-        if not os.path.isabs(avail):
-            caller = os.path.dirname(inspect.stack()[1].filename)
-            avail = os.path.join(caller, avail)
+    if isinstance(avail, str) and not os.path.isabs(avail):
+        caller = os.path.dirname(inspect.stack()[1].filename)
+        avail = os.path.join(caller, avail)
 
     avail = Availability(avail)
 

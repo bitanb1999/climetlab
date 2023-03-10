@@ -20,9 +20,7 @@ class DirectoryReader(Reader):
         self._content = []
 
         for root, _, files in os.walk(path):
-            for file in files:
-                self._content.append(os.path.join(root, file))
-
+            self._content.extend(os.path.join(root, file) for file in files)
         assert self._content, path
 
     def mutate(self):

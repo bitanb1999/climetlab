@@ -20,6 +20,4 @@ class NoneHelper:
 
 
 def helper(data, *args, **kwargs):
-    if data is None:
-        return NoneHelper(data)
-    return None
+    return NoneHelper(data) if data is None else None

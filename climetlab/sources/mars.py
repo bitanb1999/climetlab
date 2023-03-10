@@ -80,8 +80,8 @@ class MARSRetriever(FileSource):
         request = self.request(**kwargs)
         self.path = self.cache_file(request)
         if not os.path.exists(self.path):
-            service("mars").execute(request, self.path + ".tmp")
-            os.rename(self.path + ".tmp", self.path)
+            service("mars").execute(request, f"{self.path}.tmp")
+            os.rename(f"{self.path}.tmp", self.path)
 
     @normalize_args(
         param="variable-list(mars)",

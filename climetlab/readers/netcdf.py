@@ -27,9 +27,7 @@ def as_datetime(self, time):
 
 def as_level(self, level):
     n = float(level)
-    if int(n) == n:
-        return int(n)
-    return n
+    return int(n) if int(n) == n else n
 
 
 class Slice:
@@ -41,7 +39,7 @@ class Slice:
         self.is_info = is_info
 
     def __repr__(self):
-        return "[%s:%s=%s]" % (self.name, self.index, self.value)
+        return f"[{self.name}:{self.index}={self.value}]"
 
 
 class TimeSlice(Slice):
@@ -71,11 +69,7 @@ class Coordinate:
         )
 
     def __repr__(self):
-        return "%s[name=%s,values=%s]" % (
-            self.__class__.__name__,
-            self.variable.name,
-            len(self.values),
-        )
+        return f"{self.__class__.__name__}[name={self.variable.name},values={len(self.values)}]"
 
 
 class TimeCoordinate(Coordinate):
@@ -131,11 +125,11 @@ class NetCDFField:
                 self.time = s.value
 
             if s.is_info:
-                self.title += " (" + s.name + "=" + str(s.value) + ")"
+                self.title += f" ({s.name}={str(s.value)})"
 
     def plot_map(self, driver):
 
-        dimensions = dict((s.name, s.index) for s in self.slices)
+        dimensions = {s.name: s.index for s in self.slices}
 
         driver.bounding_box(
             north=self.north, south=self.south, west=self.west, east=self.east
@@ -165,7 +159,7 @@ class NetCDFReader(Reader):
             self.fields = self.get_fields()
 
     def __repr__(self):
-        return "NetCDFReader(%s)" % (self.path,)
+        return f"NetCDFReader({self.path})"
 
     def __iter__(self):
         self._scan()
@@ -259,14 +253,14 @@ class NetCDFReader(Reader):
 
             for values in product(*[c.values for c in coordinates]):
 
-                slices = []
-                for value, coordinate in zip(values, coordinates):
-                    slices.append(coordinate.make_slice(value))
-
+                slices = [
+                    coordinate.make_slice(value)
+                    for value, coordinate in zip(values, coordinates)
+                ]
                 fields.append(NetCDFField(self.path, ds, name, slices))
 
         if not fields:
-            raise Exception("NetCDFReader no 2D fields found in %s" % (self.path,))
+            raise Exception(f"NetCDFReader no 2D fields found in {self.path}")
 
         return fields
 

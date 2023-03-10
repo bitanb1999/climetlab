@@ -31,7 +31,7 @@ def check_user_defined_objects(collection, setting, obj, tree, get_list, get_ent
 
     for i, path in enumerate(paths):
 
-        name = "pytest-%s-%s" % (tree[1], i)
+        name = f"pytest-{tree[1]}-{i}"
 
         if os.path.exists(path) and os.path.isdir(path):
             assert path in directories(), directories()
@@ -39,7 +39,7 @@ def check_user_defined_objects(collection, setting, obj, tree, get_list, get_ent
         if not os.path.exists(path):
             os.mkdir(path)
 
-        with open(os.path.join(path, "%s.yaml" % (name,)), "w") as f:
+        with open(os.path.join(path, f"{name}.yaml"), "w") as f:
             a = obj
             for t in tree[:-1]:
                 a = a[t]
@@ -47,7 +47,7 @@ def check_user_defined_objects(collection, setting, obj, tree, get_list, get_ent
             yaml.dump(obj, f, default_flow_style=False)
 
     for i in range(len(paths)):
-        name = "pytest-%s-%s" % (tree[1], i)
+        name = f"pytest-{tree[1]}-{i}"
         get_data_entry(collection, name)
         assert name in get_list()
         p = get_entry(name).data
@@ -60,8 +60,8 @@ def check_user_defined_objects(collection, setting, obj, tree, get_list, get_ent
 
     # TODO: Move to tear-down
     for i, path in enumerate(paths):
-        name = "pytest-%s-%s" % (tree[1], i)
-        os.unlink(os.path.join(path, "%s.yaml" % (name,)))
+        name = f"pytest-{tree[1]}-{i}"
+        os.unlink(os.path.join(path, f"{name}.yaml"))
 
 
 def test_user_projections():

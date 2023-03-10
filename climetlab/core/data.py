@@ -59,16 +59,18 @@ class Entry:
         html = [
             css("table"),
             "<table class='climetlab'>",
-            "<tr><td>Name:</td><td>%s</td></tr>" % self.name,
-            "<tr><td>Collection:</td><td>%s</td></tr>" % self.kind,
-            "<tr><td>Path:</td><td>%s</td></tr>" % self.path,
+            f"<tr><td>Name:</td><td>{self.name}</td></tr>",
+            f"<tr><td>Collection:</td><td>{self.kind}</td></tr>",
+            f"<tr><td>Path:</td><td>{self.path}</td></tr>",
         ]
 
-        html.append(
-            "<tr><td>Definition:</td><td><pre>%s</pre></td></tr>"
-            % (yaml.dump(self.data, default_flow_style=False),)
+        html.extend(
+            (
+                "<tr><td>Definition:</td><td><pre>%s</pre></td></tr>"
+                % (yaml.dump(self.data, default_flow_style=False),),
+                "</table>",
+            )
         )
-        html.append("</table>")
         return "".join(html)
 
 
@@ -113,16 +115,10 @@ def get_data_entry(kind, name):
     files = _load_yaml_files()
 
     if kind not in files:
-        raise KeyError("No collection named '%s'" % (kind,))
+        raise KeyError(f"No collection named '{kind}'")
 
     if name not in files[kind]:
-        raise KeyError(
-            "No object '%s' in collection named '%s'"
-            % (
-                name,
-                kind,
-            )
-        )
+        raise KeyError(f"No object '{name}' in collection named '{kind}'")
 
     return files[kind][name]
 

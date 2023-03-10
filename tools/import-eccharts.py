@@ -45,5 +45,5 @@ for root, _, files in os.walk(SOURCE):
                     data = dict(magics=dict(mmap=data))
 
                     print(name)
-                    with open(os.path.join(TARGET, name + ".yaml"), "w") as f:
+                    with open(os.path.join(TARGET, f"{name}.yaml"), "w") as f:
                         yaml.dump(data, f, default_flow_style=False)

@@ -78,8 +78,7 @@ class HighLow(Dataset):
                 time=12,
             )
 
-            for s in source:
-                self._fields.append((s, label))
+            self._fields.extend((s, label) for s in source)
         self.source = source
 
     def fields(self):
@@ -96,10 +95,7 @@ class HighLow(Dataset):
     def load_data(self, normalise=True, test_size=0.5, shuffle=True, fields=False):
         data = []
         for field, label in self._fields:
-            if normalise:
-                array = normalise_01(field.to_numpy())
-            else:
-                array = field.to_numpy()
+            array = normalise_01(field.to_numpy()) if normalise else field.to_numpy()
             data.append((array, label, field))
 
         if shuffle:
